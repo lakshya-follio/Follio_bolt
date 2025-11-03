@@ -1,8 +1,11 @@
 import { supabase } from '../App';
 import React from 'react';
-import { User, MapPin, Mail, Phone, Building, GraduationCap, Code, LogOut, CreditCard as Edit } from 'lucide-react';
+import { User, MapPin, Mail, Phone, Building, GraduationCap, Code, Zap, TrendingUp } from 'lucide-react';
 import type { User as UserType, ParsedResumeData } from '../App';
-import follioIcon from '../assets/follio-icon.svg';
+import Header from './ui/Header';
+import Footer from './ui/Footer';
+import Button from './ui/Button';
+import Card from './ui/Card';
 
 interface DashboardProps {
   user: UserType | null;
@@ -17,13 +20,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, parsedData, onLogout }) => 
   React.useEffect(() => {
     const fetchProfileData = async () => {
       if (!user || parsedData) return;
-      
+
       try {
         const { data } = await supabase.from('profiles')
           .select('resume_data')
           .eq('id', user.id)
-          .single();
-        
+          .maybeSingle();
+
         if (data?.resume_data) {
           setProfileData(data.resume_data);
         }
@@ -39,10 +42,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, parsedData, onLogout }) => 
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-teal-100">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading your profile...</h2>
+          <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">Loading your profile...</h2>
+          <p className="text-neutral-600">Just a moment</p>
         </div>
       </div>
     );
@@ -50,216 +54,223 @@ const Dashboard: React.FC<DashboardProps> = ({ user, parsedData, onLogout }) => 
 
   if (!profileData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-teal-100">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No profile data found</h2>
-          <p className="text-gray-600 mb-4">Please upload and parse your resume first.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-6 py-2 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-200"
-          >
-            Go to Upload
-          </button>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-2">No profile data found</h2>
+          <p className="text-neutral-600 mb-6">
+            Please upload and parse your resume first.
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            Reload Page
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3">
-                <img src={follioIcon} alt="Follio" className="w-8 h-8" />
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-teal-500 bg-clip-text text-transparent">
-                  Follio Dashboard
-                </h1>
-              </div>
-              <p className="text-gray-600 mt-1">Welcome back, {user?.name || user?.email}</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
-                <Edit className="w-4 h-4" />
-                Edit Profile
-              </button>
-              <button 
-                onClick={onLogout}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 px-4 py-2 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen flex flex-col bg-neutral-50">
+      <Header user={user} onLogout={onLogout} showUserMenu />
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Profile Summary Card */}
-        <div className="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl shadow-lg p-8 mb-8 text-white">
-          <div className="flex items-start gap-6">
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-              <User className="w-10 h-10" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-3xl font-bold mb-2">{profileData.profile.name}</h2>
-              <p className="text-cyan-100 text-lg mb-4">{profileData.profile.headline}</p>
-              <div className="grid md:grid-cols-3 gap-4">
-                {profileData.profile.location && (
-                  <div className="flex items-center gap-2 text-cyan-100">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm">{profileData.profile.location}</span>
-                  </div>
-                )}
-                {profileData.profile.email && (
-                  <div className="flex items-center gap-2 text-cyan-100">
-                    <Mail className="w-4 h-4" />
-                    <span className="text-sm">{profileData.profile.email}</span>
-                  </div>
-                )}
-                {profileData.profile.phone && (
-                  <div className="flex items-center gap-2 text-cyan-100">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm">{profileData.profile.phone}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      <main className="flex-1">
+        <div className="container-max section-padding">
+          <div className="mb-12">
+            <Card variant="elevated" padding="spacious" className="relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full -mr-32 -mt-32 opacity-50"></div>
 
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center">
-                <Building className="w-6 h-6 text-cyan-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {profileData.experience.length}
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white flex-shrink-0">
+                  <User className="w-10 h-10" />
                 </div>
-                <div className="text-gray-600">Work Experience</div>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {profileData.education.length}
-                </div>
-                <div className="text-gray-600">Education</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Code className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {profileData.skills.length}
-                </div>
-                <div className="text-gray-600">Skills</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Experience Section */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Building className="w-5 h-5 text-cyan-600" />
-              Work Experience
-            </h3>
-            <div className="space-y-4">
-              {profileData.experience.map((exp, index) => (
-                <div key={exp.id} className="border-l-4 border-cyan-200 pl-4 pb-4">
-                  <h4 className="font-medium text-gray-900">{exp.role}</h4>
-                  <p className="text-cyan-600 font-medium">{exp.company}</p>
-                  <p className="text-sm text-gray-500">
-                    {exp.startDate && new Date(exp.startDate).toLocaleDateString()} - 
-                    {exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
+                <div className="flex-1">
+                  <h1 className="text-4xl font-bold text-neutral-900 mb-2">
+                    {profileData.profile.name}
+                  </h1>
+                  <p className="text-xl text-primary-600 font-medium mb-4">
+                    {profileData.profile.headline}
                   </p>
+
+                  <div className="flex flex-wrap gap-6">
+                    {profileData.profile.location && (
+                      <div className="flex items-center gap-2 text-neutral-700">
+                        <MapPin className="w-4 h-4 text-primary-600" />
+                        <span>{profileData.profile.location}</span>
+                      </div>
+                    )}
+                    {profileData.profile.email && (
+                      <div className="flex items-center gap-2 text-neutral-700">
+                        <Mail className="w-4 h-4 text-primary-600" />
+                        <span>{profileData.profile.email}</span>
+                      </div>
+                    )}
+                    {profileData.profile.phone && (
+                      <div className="flex items-center gap-2 text-neutral-700">
+                        <Phone className="w-4 h-4 text-primary-600" />
+                        <span>{profileData.profile.phone}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <Card variant="default" padding="normal">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
+                  <Building className="w-6 h-6 text-primary-600" />
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-neutral-900">
+                    {profileData.experience.length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Work Experience</div>
+                </div>
+              </div>
+            </Card>
+
+            <Card variant="default" padding="normal">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-success-100 rounded-xl flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-success-600" />
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-neutral-900">
+                    {profileData.education.length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Education</div>
+                </div>
+              </div>
+            </Card>
+
+            <Card variant="default" padding="normal">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-accent-100 rounded-xl flex items-center justify-center">
+                  <Code className="w-6 h-6 text-accent-600" />
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-neutral-900">
+                    {profileData.skills.length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Skills</div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            <Card variant="elevated" padding="normal">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-neutral-200">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                  <Building className="w-5 h-5 text-primary-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-neutral-900">Work Experience</h2>
+              </div>
+
+              <div className="space-y-6">
+                {profileData.experience.map((exp, index) => (
+                  <div key={exp.id} className="relative">
+                    {index !== profileData.experience.length - 1 && (
+                      <div className="absolute left-0 top-6 w-0.5 h-16 bg-primary-200"></div>
+                    )}
+                    <div className="flex gap-4">
+                      <div className="w-2 h-2 rounded-full bg-primary-600 mt-2 flex-shrink-0"></div>
+                      <div className="flex-1 pb-4">
+                        <h3 className="font-semibold text-neutral-900">{exp.role}</h3>
+                        <p className="text-primary-600 font-medium text-sm">{exp.company}</p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          {exp.startDate && new Date(exp.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                          {exp.endDate && ` – ${new Date(exp.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`}
+                          {!exp.endDate && ' – Present'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card variant="elevated" padding="normal">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-neutral-200">
+                <div className="w-10 h-10 bg-success-100 rounded-lg flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-success-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-neutral-900">Education</h2>
+              </div>
+
+              <div className="space-y-6">
+                {profileData.education.map((edu, index) => (
+                  <div key={edu.id} className="relative">
+                    {index !== profileData.education.length - 1 && (
+                      <div className="absolute left-0 top-6 w-0.5 h-16 bg-success-200"></div>
+                    )}
+                    <div className="flex gap-4">
+                      <div className="w-2 h-2 rounded-full bg-success-600 mt-2 flex-shrink-0"></div>
+                      <div className="flex-1 pb-4">
+                        <h3 className="font-semibold text-neutral-900">{edu.degree}</h3>
+                        <p className="text-success-600 font-medium text-sm">{edu.school}</p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          {edu.startDate && new Date(edu.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                          {edu.endDate && ` – ${new Date(edu.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          <Card variant="elevated" padding="normal">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-neutral-200">
+              <div className="w-10 h-10 bg-accent-100 rounded-lg flex items-center justify-center">
+                <Code className="w-5 h-5 text-accent-600" />
+              </div>
+              <h2 className="text-lg font-semibold text-neutral-900">Skills</h2>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {profileData.skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-accent-50 to-primary-50 text-primary-700 px-4 py-2 rounded-full text-sm font-medium border border-primary-200"
+                >
+                  <Zap className="w-3 h-3" />
+                  {skill}
+                </span>
               ))}
             </div>
-          </div>
+          </Card>
 
-          {/* Education Section */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-green-600" />
-              Education
-            </h3>
-            <div className="space-y-4">
-              {profileData.education.map((edu, index) => (
-                <div key={edu.id} className="border-l-4 border-green-200 pl-4 pb-4">
-                  <h4 className="font-medium text-gray-900">{edu.degree}</h4>
-                  <p className="text-green-600 font-medium">{edu.school}</p>
-                  <p className="text-sm text-gray-500">
-                    {edu.startDate && new Date(edu.startDate).toLocaleDateString()} - 
-                    {edu.endDate && new Date(edu.endDate).toLocaleDateString()}
-                  </p>
+          <div className="mt-12 p-6 bg-gradient-to-r from-warning-50 to-error-50 rounded-2xl border border-warning-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-warning-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-warning-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                  Ready to build your portfolio?
+                </h3>
+                <p className="text-neutral-700 mb-4">
+                  Your profile is all set! Next, customize your portfolio design and share it with the world.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="primary" size="sm">
+                    Customize Portfolio
+                  </Button>
+                  <Button variant="secondary" size="sm">
+                    Share Profile
+                  </Button>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
+      </main>
 
-        {/* Skills Section */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Code className="w-5 h-5 text-purple-600" />
-            Skills
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {profileData.skills.map((skill, index) => (
-              <span
-                key={index}
-                className="bg-gradient-to-r from-purple-100 to-cyan-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium border border-purple-200"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Next Steps */}
-        <div className="mt-8 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            🚀 What's Next?
-          </h3>
-          <p className="text-gray-700 mb-4">
-            Your profile is ready! Here are some suggested next steps to make the most of Folio:
-          </p>
-          <div className="space-y-2 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-              <span>Add project uploads and portfolio items</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-              <span>Customize your portfolio theme and layout</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-              <span>Share your portfolio with recruiters and hiring managers</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 };
